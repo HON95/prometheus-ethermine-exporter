@@ -92,9 +92,14 @@ func runServer() error {
 }
 
 func handleOtherRequest(response http.ResponseWriter, request *http.Request) {
-	fmt.Fprintf(response, "%s version %s by %s.\n\n", appName, appVersion, appAuthor)
-	fmt.Fprintf(response, "Metric paths:\n")
-	fmt.Fprintf(response, "- /metrics/pool\n")
+	if request.URL.Path == "/" {
+		fmt.Fprintf(response, "%s version %s by %s.\n\n", appName, appVersion, appAuthor)
+		fmt.Fprintf(response, "Metric paths:\n")
+		fmt.Fprintf(response, "- Pool info: /pool\n")
+	} else {
+		message := fmt.Sprintf("404 - Page not found.\n")
+		http.Error(response, message, 404)
+	}
 }
 
 func handlePoolScrapeRequest(response http.ResponseWriter, request *http.Request) {

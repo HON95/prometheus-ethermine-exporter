@@ -1,0 +1,18 @@
+version: '3.7'
+
+services:
+  ethermine:
+    image: hon95/prometheus-ethermine-exporter:latest
+    build:
+      context: ..
+      args:
+        - APP_VERSION=0.0.0-SNAPSHOT
+    command:
+      - '--debug'
+      - '--endpoint=:8080'
+    user: 1000:1000
+    environment:
+      - TZ=Europe/Oslo
+    ports:
+      - 127.0.0.1:8080:8080/tcp
+    restart: unless-stopped

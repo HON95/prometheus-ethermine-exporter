@@ -73,15 +73,10 @@ Use `1` for stable v1.Y.Z releases and `latest` for bleeding/unstable releases.
 
 See the [pool example output](examples/output-pool.txt) and the [miner example output](examples/output-miner.txt) (I'm too lazy to create a pretty table right now).
 
-### Docker
-
-See the dev/example Docker Compose file: [docker-compose.yml](dev/docker-compose.yml)
-
 ## Development
 
-- Build (Go): `go build -o prometheus-ethermine-exporter`
+- Build: `go build -o prometheus-ethermine-exporter`
 - Lint: `golint ./..`
-- Build and run along Traefik (Docker Compose): `docker-compose -f dev/docker-compose.yml up --force-recreate --build`
 
 ## License
 

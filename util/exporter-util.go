@@ -9,9 +9,9 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-// ScrapeJSONTarget - Scrapes the HTTP target and parses the data.
-// Returns true if successful. Any errors are written to the response writer.
-func ScrapeJSONTarget(response http.ResponseWriter, data interface{}, targetURL string, debug bool) bool {
+// ScrapeHTTPTarget - Scrapes the HTTP target and returns the data.
+// Returns nil if not successful. Any errors are written to the response writer.
+func ScrapeHTTPTarget(response http.ResponseWriter, targetURL string, debug bool) []byte {
 	// Scrape
 	scrapeRequest, scrapeRequestErr := http.NewRequest("GET", targetURL, nil)
 	if scrapeRequestErr != nil {
@@ -20,8 +20,9 @@ func ScrapeJSONTarget(response http.ResponseWriter, data interface{}, targetURL 
 		}
 		message := fmt.Sprintf("500 - Failed to scrape target: %s\n", scrapeRequestErr)
 		http.Error(response, message, 500)
-		return false
+		return nil
 	}
+	scrapeRequest.Header.Set("Accept", "application/json")
 	scrapeClient := http.Client{}
 	scrapeResponse, scrapeResponseErr := scrapeClient.Do(scrapeRequest)
 	if scrapeResponseErr != nil {
@@ -30,7 +31,7 @@ func ScrapeJSONTarget(response http.ResponseWriter, data interface{}, targetURL 
 		}
 		message := fmt.Sprintf("500 - Failed to scrape target: %s\n", scrapeResponseErr)
 		http.Error(response, message, 500)
-		return false
+		return nil
 	}
 	defer scrapeResponse.Body.Close()
 	rawData, rawDataErr := ioutil.ReadAll(scrapeResponse.Body)
@@ -40,17 +41,24 @@ func ScrapeJSONTarget(response http.ResponseWriter, data interface{}, targetURL 
 		}
 		message := fmt.Sprintf("500 - Failed to scrape target: %s\n", rawDataErr)
 		http.Error(response, message, 500)
-		return false
+		return nil
 	}
 
-	// Parse
+	return rawData
+}
+
+// ParseJSON - Parses the data to JSON.
+// Returns true if successful. Any errors are written to the response writer.
+func ParseJSON(data interface{}, response http.ResponseWriter, rawData []byte, failSilently bool, debug bool) bool {
 	if err := json.Unmarshal(rawData, &data); err != nil {
-		if debug {
-			fmt.Printf("[DEBUG] Failed to unmarshal data from target:\n%v\n", err)
-			fmt.Printf("[DEBUG] Raw data:\n%s\n", rawData)
+		if !failSilently {
+			if debug {
+				fmt.Printf("[DEBUG] Failed to unmarshal data from target:\n%v\n", err)
+				fmt.Printf("[DEBUG] Raw data:\n%s\n", rawData)
+			}
+			message := fmt.Sprintf("500 - Failed to parse scraped data.\n")
+			http.Error(response, message, 500)
 		}
-		message := fmt.Sprintf("500 - Failed to parse scraped data: %s\n", err)
-		http.Error(response, message, 500)
 		return false
 	}
 
@@ -65,7 +73,7 @@ func NewExporterMetric(registry *prometheus.Registry, namespace string, version 
 		Namespace: namespace,
 		Name:      "exporter_info",
 		Help:      "Metadata about the exporter.",
-	}, LabelsKeys(infoLabels))
+	}, MapKeys(infoLabels))
 	infoMetric.With(infoLabels).Set(1)
 	registry.MustRegister(infoMetric)
 }
@@ -89,18 +97,7 @@ func NewGaugeVec(registry *prometheus.Registry, namespace string, subsystem stri
 		Subsystem: subsystem,
 		Name:      name,
 		Help:      help,
-	}, LabelsKeys(labels))
+	}, MapKeys(labels))
 	registry.MustRegister(metric)
 	return metric
-}
-
-// LabelsKeys - Extract the keys from the labels map.
-func LabelsKeys(fullMap prometheus.Labels) []string {
-	keys := make([]string, len(fullMap))
-	i := 0
-	for key := range fullMap {
-		keys[i] = key
-		i++
-	}
-	return keys
 }

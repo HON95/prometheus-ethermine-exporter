@@ -5,7 +5,16 @@
 [![FOSSA status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FHON95%2Fprometheus-ethermine-exporter.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FHON95%2Fprometheus-ethermine-exporter?ref=badge_shield)
 [![Docker pulls](https://img.shields.io/docker/pulls/hon95/prometheus-ethermine-exporter?label=Docker%20Hub)](https://hub.docker.com/r/hon95/prometheus-ethermine-exporter)
 
-An exporter for the [Ethermine, Ethpool and Flypool API](https://ethermine.org/api).
+An exporter for the following cryptocurrency mining pools:
+
+- [Ethermine](https://ethermine.org/)
+- [Ethermine ETC](https://etc.ethermine.org/)
+- [Ethpool](https://ethpool.org/)
+- [Zcash Flypool](https://zcash.flypool.org/)
+- [Ravencoin Flypool](https://ravencoin.flypool.org/)
+- [BEAM Flypool](https://beam.flypool.org/)
+
+The exporter uses the unified API structure for all the listed pools, so support for arbitrary other pools will not be added.
 
 ## Usage
 
@@ -43,6 +52,8 @@ scrape_configs:
     # Limit due to API rate restriction
     scrape_interval: 5m
     metrics_path: /pool
+    params:
+      pool: [ethermine]
     static_configs:
       - targets:
           - ethermine-exporter:8080
@@ -51,6 +62,8 @@ scrape_configs:
     # Limit due to API rate restriction
     scrape_interval: 5m
     metrics_path: /miner
+    params:
+      pool: [ethermine]
     static_configs:
       - targets:
           - F6403152cAd46F2224046C9B9F523d690E41Bffd

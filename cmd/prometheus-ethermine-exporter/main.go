@@ -14,12 +14,20 @@ import (
 
 const namespace = "ethermine"
 
-const apiRootURL = "https://api.ethermine.org"
-const apiPoolBasicURL = apiRootURL + "/poolStats"
-const apiPoolNetworkURL = apiRootURL + "/networkStats"
-const apiPoolServerURL = apiRootURL + "/servers/history"
-const apiMinerStatsURLTemplate = apiRootURL + "/miner/<miner>/currentStats"
-const apiMinerWorkersURLTemplate = apiRootURL + "/miner/<miner>/workers"
+var poolAPIURLs = map[string]string{
+	"ethermine":         "https://api.ethermine.org",
+	"ethermine-etc":     "https://api-etc.ethermine.org",
+	"ethpool":           "https://ethpool.org/api/pool",
+	"flypool-zcash":     "https://api-zcash.flypool.org",
+	"flypool-ravencoin": "https://api-ravencoin.flypool.org",
+	"flypool-beam":      "https://api-beam.flypool.org",
+}
+
+const poolBasicAPIURLSuffix = "/poolStats"
+const poolNetworkAPIURLSuffix = "/networkStats"
+const poolServerAPIURLSuffix = "/servers/history"
+const minerStatsAPIURLSuffixTemplate = "/miner/<miner>/currentStats"
+const minerWorkersAPIURLSuffixTemplate = "/miner/<miner>/workers"
 
 const defaultDebug = false
 const defaultEndpoint = ":8080"
@@ -29,6 +37,11 @@ var endpoint = defaultEndpoint
 
 type baseAPIData struct {
 	Status string `json:"status"`
+}
+
+type noDataAPIData struct {
+	baseAPIData
+	Data string `json:"data"`
 }
 
 type poolBasicAPIData struct {
@@ -129,10 +142,14 @@ func runServer() error {
 
 func handleOtherRequest(response http.ResponseWriter, request *http.Request) {
 	if request.URL.Path == "/" {
-		fmt.Fprintf(response, "%s version %s by %s.\n\n", appName, appVersion, appAuthor)
-		fmt.Fprintf(response, "Metric paths:\n")
-		fmt.Fprintf(response, "- Pool: /pool\n")
-		fmt.Fprintf(response, "- Miner: /miner?target=<miner-address>\n")
+		fmt.Fprintf(response, "%s version %s by %s.\n", appName, appVersion, appAuthor)
+		fmt.Fprintf(response, "\nPool IDs:\n")
+		for _, poolID := range util.MapKeys(poolAPIURLs) {
+			fmt.Fprintf(response, "- %s\n", poolID)
+		}
+		fmt.Fprintf(response, "\nMetrics paths:\n")
+		fmt.Fprintf(response, "- Pool: /pool?pool=<pool>\n")
+		fmt.Fprintf(response, "- Miner: /miner?pool=<pool>&target=<miner-address>\n")
 	} else {
 		message := fmt.Sprintf("404 - Page not found.\n")
 		http.Error(response, message, 404)
@@ -144,13 +161,27 @@ func handlePoolScrapeRequest(response http.ResponseWriter, request *http.Request
 		fmt.Printf("[DEBUG] Pool request: from=%s to=%v\n", request.RemoteAddr, request.URL.String())
 	}
 
+	// Get pool
+	var poolID string
+	if values, ok := request.URL.Query()["pool"]; ok && len(values) > 0 && values[0] != "" {
+		poolID = values[0]
+	} else {
+		http.Error(response, "400 - Missing pool.\n", 400)
+		return
+	}
+	poolURL, poolURLOK := poolAPIURLs[poolID]
+	if !poolURLOK {
+		http.Error(response, "400 - Invalid pool.\n", 400)
+		return
+	}
+
 	// Scrape target and parse data
 	var basicData poolBasicAPIData
-	if !util.ScrapeJSONTarget(response, &basicData, apiPoolBasicURL, enableDebug) {
+	if !scrapeParse(&basicData, response, poolURL+poolBasicAPIURLSuffix) {
 		return
 	}
 	var serverData poolServerAPIData
-	if !util.ScrapeJSONTarget(response, &serverData, apiPoolServerURL, enableDebug) {
+	if !scrapeParse(&serverData, response, poolURL+poolServerAPIURLSuffix) {
 		return
 	}
 
@@ -170,6 +201,20 @@ func handleMinerScrapeRequest(response http.ResponseWriter, request *http.Reques
 		fmt.Printf("[DEBUG] Miner request: from=%s to=%v\n", request.RemoteAddr, request.URL.String())
 	}
 
+	// Get pool
+	var poolID string
+	if values, ok := request.URL.Query()["pool"]; ok && len(values) > 0 && values[0] != "" {
+		poolID = values[0]
+	} else {
+		http.Error(response, "400 - Missing pool.\n", 400)
+		return
+	}
+	poolURL, poolURLOK := poolAPIURLs[poolID]
+	if !poolURLOK {
+		http.Error(response, "404 - Pool not found.\n", 404)
+		return
+	}
+
 	// Get miner address
 	var minerAddress string
 	if values, ok := request.URL.Query()["target"]; ok && len(values) > 0 && values[0] != "" {
@@ -180,14 +225,14 @@ func handleMinerScrapeRequest(response http.ResponseWriter, request *http.Reques
 	}
 
 	// Scrape target and parse data
-	apiMinerStatsURL := strings.Replace(apiMinerStatsURLTemplate, "<miner>", minerAddress, 1)
+	apiMinerStatsURL := strings.Replace(poolURL+minerStatsAPIURLSuffixTemplate, "<miner>", minerAddress, 1)
 	var statsData minerStatsAPIData
-	if !util.ScrapeJSONTarget(response, &statsData, apiMinerStatsURL, enableDebug) {
+	if !scrapeParse(&statsData, response, apiMinerStatsURL) {
 		return
 	}
-	apiMinerWorkersURL := strings.Replace(apiMinerWorkersURLTemplate, "<miner>", minerAddress, 1)
+	apiMinerWorkersURL := strings.Replace(poolURL+minerWorkersAPIURLSuffixTemplate, "<miner>", minerAddress, 1)
 	var workersData minerWorkersAPIData
-	if !util.ScrapeJSONTarget(response, &workersData, apiMinerWorkersURL, enableDebug) {
+	if !scrapeParse(&workersData, response, apiMinerWorkersURL) {
 		return
 	}
 
@@ -200,6 +245,34 @@ func handleMinerScrapeRequest(response http.ResponseWriter, request *http.Reques
 	// Delegare final handling to Prometheus
 	handler := promhttp.HandlerFor(registry, promhttp.HandlerOpts{})
 	handler.ServeHTTP(response, request)
+}
+
+// Scrape the HTTP target, parse the result and check if the result is OK.
+func scrapeParse(data interface{}, response http.ResponseWriter, targetURL string) bool {
+	// Scrape
+	rawData := util.ScrapeHTTPTarget(response, targetURL, enableDebug)
+
+	// Check status
+	var baseData baseAPIData
+	if !util.ParseJSON(&baseData, response, rawData, false, enableDebug) {
+		return false
+	}
+	if baseData.Status != "OK" {
+		http.Error(response, "500 - API data not OK.\n", 500)
+		return false
+	}
+
+	// Check if no data (ignore failed parse)
+	var noDataData noDataAPIData
+	if util.ParseJSON(&noDataData, response, rawData, true, enableDebug) {
+		if noDataData.Data == "NO DATA" {
+			http.Error(response, "404 - API data not found for pool.\n", 404)
+			return false
+		}
+	}
+
+	// Parse final data
+	return util.ParseJSON(&data, response, rawData, false, enableDebug)
 }
 
 // Builds a new registry for the pool endpoint, adds scraped data to it and returns it if successful or nil if not.

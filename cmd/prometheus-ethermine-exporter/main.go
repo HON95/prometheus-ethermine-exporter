@@ -14,10 +14,11 @@ import (
 
 const namespace = "ethermine"
 
+// Note: Ensure no trailing '/'s
 var poolAPIURLs = map[string]string{
 	"ethermine":         "https://api.ethermine.org",
 	"ethermine-etc":     "https://api-etc.ethermine.org",
-	"ethpool":           "https://ethpool.org/api/pool",
+	"ethpool":           "https://api.ethpool.org",
 	"flypool-zcash":     "https://api-zcash.flypool.org",
 	"flypool-ravencoin": "https://api-ravencoin.flypool.org",
 	"flypool-beam":      "https://api-beam.flypool.org",
@@ -158,7 +159,7 @@ func handleOtherRequest(response http.ResponseWriter, request *http.Request) {
 
 func handlePoolScrapeRequest(response http.ResponseWriter, request *http.Request) {
 	if enableDebug {
-		fmt.Printf("[DEBUG] Pool request: from=%s to=%v\n", request.RemoteAddr, request.URL.String())
+		fmt.Printf("[DEBUG] Request: endpoint=%s from=%s to=%v\n", "pool", request.RemoteAddr, request.URL.String())
 	}
 
 	// Get pool
@@ -198,7 +199,7 @@ func handlePoolScrapeRequest(response http.ResponseWriter, request *http.Request
 
 func handleMinerScrapeRequest(response http.ResponseWriter, request *http.Request) {
 	if enableDebug {
-		fmt.Printf("[DEBUG] Miner request: from=%s to=%v\n", request.RemoteAddr, request.URL.String())
+		fmt.Printf("[DEBUG] Request: endpoint=%s from=%s to=%v\n", "miner", request.RemoteAddr, request.URL.String())
 	}
 
 	// Get pool

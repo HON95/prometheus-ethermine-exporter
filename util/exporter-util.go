@@ -13,6 +13,9 @@ import (
 // Returns nil if not successful. Any errors are written to the response writer.
 func ScrapeHTTPTarget(response http.ResponseWriter, targetURL string, debug bool) []byte {
 	// Scrape
+	if debug {
+		fmt.Printf("[DEBUG] Sending scrape request: %s\n", targetURL)
+	}
 	scrapeRequest, scrapeRequestErr := http.NewRequest("GET", targetURL, nil)
 	if scrapeRequestErr != nil {
 		if debug {

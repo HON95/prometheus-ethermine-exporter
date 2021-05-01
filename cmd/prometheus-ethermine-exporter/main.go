@@ -186,7 +186,7 @@ func handlePoolScrapeRequest(response http.ResponseWriter, request *http.Request
 	}
 
 	// Build registry with data
-	registry := buildPoolRegistry(response, &basicData, &serverData)
+	registry := buildPoolRegistry(response, poolID, &basicData, &serverData)
 	if registry == nil {
 		return
 	}
@@ -237,7 +237,7 @@ func handleMinerScrapeRequest(response http.ResponseWriter, request *http.Reques
 	}
 
 	// Build registry with data
-	registry := buildMinerRegistry(response, minerAddress, &statsData, &workersData)
+	registry := buildMinerRegistry(response, poolID, minerAddress, &statsData, &workersData)
 	if registry == nil {
 		return
 	}
@@ -276,18 +276,22 @@ func scrapeParse(data interface{}, response http.ResponseWriter, targetURL strin
 }
 
 // Builds a new registry for the pool endpoint, adds scraped data to it and returns it if successful or nil if not.
-func buildPoolRegistry(response http.ResponseWriter, basicData *poolBasicAPIData, serverData *poolServerAPIData) *prometheus.Registry {
+func buildPoolRegistry(response http.ResponseWriter, poolID string, basicData *poolBasicAPIData, serverData *poolServerAPIData) *prometheus.Registry {
 	registry := prometheus.NewRegistry()
 	registry.MustRegister(prometheus.NewGoCollector())
 
 	util.NewExporterMetric(registry, namespace, appVersion)
 
+	constLabels := prometheus.Labels{
+		"pool": poolID,
+	}
+
 	// Basic stats
-	util.NewGauge(registry, namespace, "pool", "hashrate_hps", "Current total hash rate of the pool (H/s).").Set(basicData.Data.Stats.HashRate)
-	util.NewGauge(registry, namespace, "pool", "miner_count", "Current total number of miners in the pool.").Set(basicData.Data.Stats.MinerCount)
-	util.NewGauge(registry, namespace, "pool", "worker_count", "Current total number of workers in the pool.").Set(basicData.Data.Stats.WorkerCount)
-	util.NewGauge(registry, namespace, "pool", "price_usd", "Current price (USD).").Set(basicData.Data.Price.USD)
-	util.NewGauge(registry, namespace, "pool", "price_btc", "Current price (BTC).").Set(basicData.Data.Price.BTC)
+	util.NewGauge(registry, namespace, "pool", "hashrate_hps", "Current total hash rate of the pool (H/s).", constLabels).Set(basicData.Data.Stats.HashRate)
+	util.NewGauge(registry, namespace, "pool", "miner_count", "Current total number of miners in the pool.", constLabels).Set(basicData.Data.Stats.MinerCount)
+	util.NewGauge(registry, namespace, "pool", "worker_count", "Current total number of workers in the pool.", constLabels).Set(basicData.Data.Stats.WorkerCount)
+	util.NewGauge(registry, namespace, "pool", "price_usd", "Current price (USD).", constLabels).Set(basicData.Data.Price.USD)
+	util.NewGauge(registry, namespace, "pool", "price_btc", "Current price (BTC).", constLabels).Set(basicData.Data.Price.BTC)
 
 	// Server stats
 	lastServerElements := make(map[string]*poolServerAPIDataElement)
@@ -301,7 +305,7 @@ func buildPoolRegistry(response http.ResponseWriter, basicData *poolBasicAPIData
 	}
 	serverLabels := make(prometheus.Labels)
 	serverLabels["server"] = ""
-	serverHashRateMetric := util.NewGaugeVec(registry, namespace, "pool", "server_hashrate_hps", "Current hash rate per server (H/s).", serverLabels)
+	serverHashRateMetric := util.NewGaugeVec(registry, namespace, "pool", "server_hashrate_hps", "Current hash rate per server (H/s).", constLabels, serverLabels)
 	for server, element := range lastServerElements {
 		labels := make(prometheus.Labels)
 		labels["server"] = server
@@ -312,37 +316,40 @@ func buildPoolRegistry(response http.ResponseWriter, basicData *poolBasicAPIData
 }
 
 // Builds a new registry for the miner endpoint, adds scraped data to it and returns it if successful or nil if not.
-func buildMinerRegistry(response http.ResponseWriter, minerAddress string, statsData *minerStatsAPIData, workersData *minerWorkersAPIData) *prometheus.Registry {
+func buildMinerRegistry(response http.ResponseWriter, poolID string, minerAddress string, statsData *minerStatsAPIData, workersData *minerWorkersAPIData) *prometheus.Registry {
 	registry := prometheus.NewRegistry()
 	registry.MustRegister(prometheus.NewGoCollector())
 
 	util.NewExporterMetric(registry, namespace, appVersion)
 
 	// Note: Miner address isn't needed as it's the instance/target of the scrape.
+	constLabels := prometheus.Labels{
+		"pool": poolID,
+	}
 
 	// Miner stats
-	util.NewGauge(registry, namespace, "miner", "last_seen_seconds", "Delta between time of last statistics entry and when any workers from the miner was last seen (s).").Set(statsData.Data.Timestamp - statsData.Data.LastSeenTimestamp)
-	util.NewGauge(registry, namespace, "miner", "hashrate_reported_hps", "Total hash rate for a miner as reported by the miner (H/s).").Set(statsData.Data.ReportedHashRate)
-	util.NewGauge(registry, namespace, "miner", "hashrate_current_hps", "Total current hash rate for a miner (H/s).").Set(statsData.Data.CurrentHashRate)
-	util.NewGauge(registry, namespace, "miner", "hashrate_average_hps", "Total average hash rate for a miner (H/s).").Set(statsData.Data.AverageHashRate)
-	util.NewGauge(registry, namespace, "miner", "shares_valid", "Total number of valid shares for a miner.").Set(statsData.Data.ValidShares)
-	util.NewGauge(registry, namespace, "miner", "shares_invalid", "Total number of invalid shares for a miner.").Set(statsData.Data.InvalidShares)
-	util.NewGauge(registry, namespace, "miner", "shares_stale", "Total number of stale shares for a miner.").Set(statsData.Data.StaleShares)
-	util.NewGauge(registry, namespace, "miner", "balance_unpaid_coins", "Unpaid balance for a miner (in the pool's native currency).").Set(statsData.Data.UnpaidBalance)
-	util.NewGauge(registry, namespace, "miner", "balance_unconfirmed_coins", "Unconfirmed balance for a miner (in the pool's native currency).").Set(statsData.Data.UnconfirmedBalance)
-	util.NewGauge(registry, namespace, "miner", "income_minute_coins", "Mined coins per minute (in the pool's native currency).").Set(statsData.Data.CoinsPerMinute)
-	util.NewGauge(registry, namespace, "miner", "income_minute_usd", "Mined coins per minute (converted to USD).").Set(statsData.Data.USDPerMinute)
-	util.NewGauge(registry, namespace, "miner", "income_minute_btc", "Mined coins per minute (converted to BTC).").Set(statsData.Data.BTCPerMinute)
+	util.NewGauge(registry, namespace, "miner", "last_seen_seconds", "Delta between time of last statistics entry and when any workers from the miner was last seen (s).", constLabels).Set(statsData.Data.Timestamp - statsData.Data.LastSeenTimestamp)
+	util.NewGauge(registry, namespace, "miner", "hashrate_reported_hps", "Total hash rate for a miner as reported by the miner (H/s).", constLabels).Set(statsData.Data.ReportedHashRate)
+	util.NewGauge(registry, namespace, "miner", "hashrate_current_hps", "Total current hash rate for a miner (H/s).", constLabels).Set(statsData.Data.CurrentHashRate)
+	util.NewGauge(registry, namespace, "miner", "hashrate_average_hps", "Total average hash rate for a miner (H/s).", constLabels).Set(statsData.Data.AverageHashRate)
+	util.NewGauge(registry, namespace, "miner", "shares_valid", "Total number of valid shares for a miner.", constLabels).Set(statsData.Data.ValidShares)
+	util.NewGauge(registry, namespace, "miner", "shares_invalid", "Total number of invalid shares for a miner.", constLabels).Set(statsData.Data.InvalidShares)
+	util.NewGauge(registry, namespace, "miner", "shares_stale", "Total number of stale shares for a miner.", constLabels).Set(statsData.Data.StaleShares)
+	util.NewGauge(registry, namespace, "miner", "balance_unpaid_coins", "Unpaid balance for a miner (in the pool's native currency).", constLabels).Set(statsData.Data.UnpaidBalance)
+	util.NewGauge(registry, namespace, "miner", "balance_unconfirmed_coins", "Unconfirmed balance for a miner (in the pool's native currency).", constLabels).Set(statsData.Data.UnconfirmedBalance)
+	util.NewGauge(registry, namespace, "miner", "income_minute_coins", "Mined coins per minute (in the pool's native currency).", constLabels).Set(statsData.Data.CoinsPerMinute)
+	util.NewGauge(registry, namespace, "miner", "income_minute_usd", "Mined coins per minute (converted to USD).", constLabels).Set(statsData.Data.USDPerMinute)
+	util.NewGauge(registry, namespace, "miner", "income_minute_btc", "Mined coins per minute (converted to BTC).", constLabels).Set(statsData.Data.BTCPerMinute)
 
 	// Worker stats
 	workerLabels := make(prometheus.Labels)
 	workerLabels["worker"] = ""
-	workerLastSeenMetric := util.NewGaugeVec(registry, namespace, "worker", "last_seen_seconds", "Delta between time of last statistics entry and when the miner was last seen (s).", workerLabels)
-	workerReportedHashRateMetric := util.NewGaugeVec(registry, namespace, "worker", "hashrate_reported_hps", "Current hash rate for a worker as reported from the worker (H/s).", workerLabels)
-	workerCurrentHashRateMetric := util.NewGaugeVec(registry, namespace, "worker", "hashrate_current_hps", "Current hash rate for a worker (H/s).", workerLabels)
-	workerValidSharesMetric := util.NewGaugeVec(registry, namespace, "worker", "shares_valid", "Number of valid shared for a worker.", workerLabels)
-	workerInvalidSharesMetric := util.NewGaugeVec(registry, namespace, "worker", "shares_invalid", "Number of invalid shared for a worker.", workerLabels)
-	workerStaleSharesMetric := util.NewGaugeVec(registry, namespace, "worker", "shares_stale", "Number of stale shared for a worker.", workerLabels)
+	workerLastSeenMetric := util.NewGaugeVec(registry, namespace, "worker", "last_seen_seconds", "Delta between time of last statistics entry and when the miner was last seen (s).", constLabels, workerLabels)
+	workerReportedHashRateMetric := util.NewGaugeVec(registry, namespace, "worker", "hashrate_reported_hps", "Current hash rate for a worker as reported from the worker (H/s).", constLabels, workerLabels)
+	workerCurrentHashRateMetric := util.NewGaugeVec(registry, namespace, "worker", "hashrate_current_hps", "Current hash rate for a worker (H/s).", constLabels, workerLabels)
+	workerValidSharesMetric := util.NewGaugeVec(registry, namespace, "worker", "shares_valid", "Number of valid shared for a worker.", constLabels, workerLabels)
+	workerInvalidSharesMetric := util.NewGaugeVec(registry, namespace, "worker", "shares_invalid", "Number of invalid shared for a worker.", constLabels, workerLabels)
+	workerStaleSharesMetric := util.NewGaugeVec(registry, namespace, "worker", "shares_stale", "Number of stale shared for a worker.", constLabels, workerLabels)
 	for _, element := range workersData.Data {
 		labels := make(prometheus.Labels)
 		labels["worker"] = element.Name

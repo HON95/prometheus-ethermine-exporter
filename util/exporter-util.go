@@ -79,24 +79,26 @@ func NewExporterMetric(registry *prometheus.Registry, namespace string, version 
 }
 
 // NewGauge - Convenience function to create, register and return a gauge.
-func NewGauge(registry *prometheus.Registry, namespace string, subsystem string, name string, help string) prometheus.Gauge {
+func NewGauge(registry *prometheus.Registry, namespace string, subsystem string, name string, help string, constLabels prometheus.Labels) prometheus.Gauge {
 	var metric = prometheus.NewGauge(prometheus.GaugeOpts{
-		Namespace: namespace,
-		Subsystem: subsystem,
-		Name:      name,
-		Help:      help,
+		Namespace:   namespace,
+		Subsystem:   subsystem,
+		Name:        name,
+		Help:        help,
+		ConstLabels: constLabels,
 	})
 	registry.MustRegister(metric)
 	return metric
 }
 
 // NewGaugeVec - Convenience function to create, register and return a labeled gauge.
-func NewGaugeVec(registry *prometheus.Registry, namespace string, subsystem string, name string, help string, labels prometheus.Labels) *prometheus.GaugeVec {
+func NewGaugeVec(registry *prometheus.Registry, namespace string, subsystem string, name string, help string, constLabels prometheus.Labels, labels prometheus.Labels) *prometheus.GaugeVec {
 	var metric = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Namespace: namespace,
-		Subsystem: subsystem,
-		Name:      name,
-		Help:      help,
+		Namespace:   namespace,
+		Subsystem:   subsystem,
+		Name:        name,
+		Help:        help,
+		ConstLabels: constLabels,
 	}, MapKeys(labels))
 	registry.MustRegister(metric)
 	return metric

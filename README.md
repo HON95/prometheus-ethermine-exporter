@@ -48,7 +48,7 @@ global:
     scrape_timeout: 10s
 
 scrape_configs:
-  - job_name: ethermine-pool
+  - job_name: ethermine-ethermine-pool
     # Limit due to API rate restriction
     scrape_interval: 5m
     metrics_path: /pool
@@ -58,7 +58,17 @@ scrape_configs:
       - targets:
           - ethermine-exporter:8080
 
-  - job_name: ethermine-miner
+  - job_name: ethermine-ethpool-pool
+    # Limit due to API rate restriction
+    scrape_interval: 5m
+    metrics_path: /pool
+    params:
+      pool: [ethpool]
+    static_configs:
+      - targets:
+          - ethermine-exporter:8080
+
+  - job_name: ethermine-ethermine-miner
     # Limit due to API rate restriction
     scrape_interval: 5m
     metrics_path: /miner
@@ -76,6 +86,8 @@ scrape_configs:
         replacement: ethermine-exporter:8080
 ```
 
+Note: Only one pool per job is supported, so if you want to scrape multiple pools, you need to create multiple jobs for each pool.
+
 ## Configuration
 
 ### Docker Image Versions
@@ -85,6 +97,8 @@ Use `1` for stable v1.Y.Z releases and `latest` for bleeding/unstable releases.
 ## Metrics
 
 See the [pool example output](examples/output-pool.txt) and the [miner example output](examples/output-miner.txt) (I'm too lazy to create a pretty table right now).
+
+Note: All metrics start with `ethermine` (due to the name of this exporter), regardless of the actual pool the petric is for (which is provided as a label).
 
 ## Development
 

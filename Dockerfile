@@ -14,11 +14,15 @@ RUN go mod download
 
 # Build app
 ARG APP_VERSION
-COPY *.go ./
-RUN go build -v -ldflags="-X 'main.appVersion=${APP_VERSION}'" -o prometheus-ethermine-exporter
+COPY cmd cmd
+COPY util util
+RUN go build -v \
+-ldflags="-X 'main.appVersion=${APP_VERSION}'" \
+-o prometheus-ethermine-exporter \
+cmd/prometheus-ethermine-exporter/*.go
 
 # Test
-RUN go test -v .
+#RUN go test -v .
 
 ## Runtime stage
 FROM alpine:3 AS runtime

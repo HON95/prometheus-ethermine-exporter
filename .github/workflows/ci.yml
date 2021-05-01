@@ -25,7 +25,7 @@ jobs:
     - name: Lint
       run: go install golang.org/x/lint/golint@latest && ~/go/bin/golint -set_exit_status ./...
     - name: Build
-      run: go build -o prometheus-ethermine-exporter
+      run: go build -o prometheus-ethermine-exporter cmd/prometheus-ethermine-exporter/*.go
 
   publish-bleeding:
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'

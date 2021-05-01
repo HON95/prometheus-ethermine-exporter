@@ -10,7 +10,7 @@ import (
 )
 
 // ScrapeJSONTarget - Scrapes the HTTP target and parses the data.
-// Returns true if successful. Any errors written to the response writer.
+// Returns true if successful. Any errors are written to the response writer.
 func ScrapeJSONTarget(response http.ResponseWriter, data interface{}, targetURL string, debug bool) bool {
 	// Scrape
 	scrapeRequest, scrapeRequestErr := http.NewRequest("GET", targetURL, nil)

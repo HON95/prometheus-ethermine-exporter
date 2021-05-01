@@ -76,7 +76,7 @@ See the [pool example output](examples/output-pool.txt) and the [miner example o
 ## Development
 
 - Build: `go build -o prometheus-ethermine-exporter`
-- Lint: `golint ./..`
+- Lint: `golint ./...`
 
 ## License
 

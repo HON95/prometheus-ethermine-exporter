@@ -83,7 +83,6 @@ jobs:
         build-args: |
           APP_VERSION=${{env.version}}
         tags: |
-          ${{env.DOCKER_REPO}}:latest
           ${{env.DOCKER_REPO}}:${{env.version_major}}
           ${{env.DOCKER_REPO}}:${{env.version_minor}}
           ${{env.DOCKER_REPO}}:${{env.version_patch}}

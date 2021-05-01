@@ -39,14 +39,29 @@ global:
     scrape_timeout: 10s
 
 scrape_configs:
-  - job_name: "ethermine"
+  - job_name: ethermine-pool
+    # Limit due to API rate restriction
+    scrape_interval: 5m
+    metrics_path: /pool
     static_configs:
-      - targets: ["ethermine-exporter:8080"]
+      - targets:
+          - ethermine-exporter:8080
+
+  - job_name: ethermine-miner
+    # Limit due to API rate restriction
+    scrape_interval: 5m
+    metrics_path: /miner
+    static_configs:
+      - targets:
+          - F6403152cAd46F2224046C9B9F523d690E41Bffd
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: ethermine-exporter:8080
 ```
-
-### Grafana
-
-[Example dashboard](https://grafana.com/grafana/dashboards/14296).
 
 ## Configuration
 
@@ -56,7 +71,7 @@ Use `1` for stable v1.Y.Z releases and `latest` for bleeding/unstable releases.
 
 ## Metrics
 
-See the [example output](examples/output.txt) (I'm too lazy to create a pretty table).
+See the [pool example output](examples/output-pool.txt) and the [miner example output](examples/output-miner.txt) (I'm too lazy to create a pretty table right now).
 
 ### Docker
 

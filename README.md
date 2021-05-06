@@ -5,6 +5,8 @@
 [![FOSSA status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FHON95%2Fprometheus-ethermine-exporter.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FHON95%2Fprometheus-ethermine-exporter?ref=badge_shield)
 [![Docker pulls](https://img.shields.io/docker/pulls/hon95/prometheus-ethermine-exporter?label=Docker%20Hub)](https://hub.docker.com/r/hon95/prometheus-ethermine-exporter)
 
+![Dashboard](https://grafana.com/api/dashboards/14347/images/10336/image)
+
 An exporter for the following cryptocurrency mining pools:
 
 - [Ethermine](https://ethermine.org/)

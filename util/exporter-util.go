@@ -72,13 +72,7 @@ func ParseJSON(data interface{}, response http.ResponseWriter, rawData []byte, f
 func NewExporterMetric(registry *prometheus.Registry, namespace string, version string) {
 	infoLabels := make(prometheus.Labels)
 	infoLabels["version"] = version
-	var infoMetric = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Namespace: namespace,
-		Name:      "exporter_info",
-		Help:      "Metadata about the exporter.",
-	}, MapKeys(infoLabels))
-	infoMetric.With(infoLabels).Set(1)
-	registry.MustRegister(infoMetric)
+	NewGauge(registry, namespace, "exporter", "info", "Metadata about the exporter.", infoLabels).Set(1)
 }
 
 // NewGauge - Convenience function to create, register and return a gauge.

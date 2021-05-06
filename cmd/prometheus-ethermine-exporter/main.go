@@ -12,29 +12,52 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-const namespace = "ethermine"
+// CurrencySymbol - The symbol of a currency, e.g. ETH for Ethereum.
+type CurrencySymbol string
 
-// Note: Ensure no trailing '/'s
-var poolAPIURLs = map[string]string{
-	"ethermine":         "https://api.ethermine.org",
-	"ethermine-etc":     "https://api-etc.ethermine.org",
-	"ethpool":           "https://api.ethpool.org",
-	"flypool-zcash":     "https://api-zcash.flypool.org",
-	"flypool-ravencoin": "https://api-ravencoin.flypool.org",
-	"flypool-beam":      "https://api-beam.flypool.org",
+// List of currency symbols.
+const (
+	CurrencySymbolEthereum        = "ETH"
+	CurrencySymbolEthereumClassic = "ETC"
+	CurrencySymbolZcash           = "ZEC"
+	CurrencySymbolRavencoin       = "RVN"
+	CurrencySymbolBEAM            = "BEAM"
+)
+
+// Currency - Currency info.
+type Currency struct {
+	Currency CurrencySymbol
+	// E.g. number of weis in 1 ether.
+	BaseUnitsPerUnit float64
 }
 
-const poolBasicAPIURLSuffix = "/poolStats"
-const poolNetworkAPIURLSuffix = "/networkStats"
-const poolServerAPIURLSuffix = "/servers/history"
-const minerStatsAPIURLSuffixTemplate = "/miner/<miner>/currentStats"
-const minerWorkersAPIURLSuffixTemplate = "/miner/<miner>/workers"
+// Currencies - List of currencies used by the supported pools.
+var Currencies = map[CurrencySymbol]Currency{
+	CurrencySymbolEthereum:        {CurrencySymbolEthereum, 1e18},
+	CurrencySymbolEthereumClassic: {CurrencySymbolEthereumClassic, 1e18},
+	CurrencySymbolZcash:           {CurrencySymbolZcash, 1},
+	CurrencySymbolRavencoin:       {CurrencySymbolRavencoin, 1},
+	CurrencySymbolBEAM:            {CurrencySymbolBEAM, 1},
+}
 
-const defaultDebug = false
-const defaultEndpoint = ":8080"
+// Pool - Pool info.
+type Pool struct {
+	ID       string
+	Name     string
+	Currency CurrencySymbol
+	// URL must not have a trailing slash.
+	APIURL string
+}
 
-var enableDebug = false
-var endpoint = defaultEndpoint
+// Pools - List of supported pools.
+var Pools = map[string]Pool{
+	"ethermine":         {"ethermine", "Ethermine", CurrencySymbolEthereum, "https://api.ethermine.org"},
+	"ethermine-etc":     {"ethermine-etc", "ETC Ethermine", CurrencySymbolEthereumClassic, "https://api-etc.ethermine.org"},
+	"ethpool":           {"ethpool", "Ethpool", CurrencySymbolEthereum, "https://api.ethpool.org"},
+	"flypool-zcash":     {"flypool-zcash", "Zcash Flypool", CurrencySymbolZcash, "https://api-zcash.flypool.org"},
+	"flypool-ravencoin": {"flypool-ravencoin", "Tavencoin Flypool", CurrencySymbolRavencoin, "https://api-ravencoin.flypool.org"},
+	"flypool-beam":      {"flypool-beam", "Flypool BEAM", CurrencySymbolBEAM, "https://api-beam.flypool.org"},
+}
 
 type baseAPIData struct {
 	Status string `json:"status"`
@@ -74,20 +97,20 @@ type poolServerAPIDataElement struct {
 type minerStatsAPIData struct {
 	baseAPIData
 	Data struct {
-		Timestamp          float64 `json:"time"`
-		LastSeenTimestamp  float64 `json:"lastSeen"`
-		ReportedHashRate   float64 `json:"reportedHashrate"`
-		CurrentHashRate    float64 `json:"currentHashrate"`
-		AverageHashRate    float64 `json:"averageHashrate"`
-		ValidShares        float64 `json:"validShares"`
-		InvalidShares      float64 `json:"invalidShares"`
-		StaleShares        float64 `json:"staleShares"`
-		ActiveWorkers      float64 `json:"activeWorkers"`
-		UnpaidBalance      float64 `json:"unpaid"`
-		UnconfirmedBalance float64 `json:"unconfirmed"`
-		CoinsPerMinute     float64 `json:"coinsPerMin"`
-		BTCPerMinute       float64 `json:"btcPerMin"`
-		USDPerMinute       float64 `json:"usdPerMin"`
+		Timestamp                   float64 `json:"time"`
+		LastSeenTimestamp           float64 `json:"lastSeen"`
+		ReportedHashRate            float64 `json:"reportedHashrate"`
+		CurrentHashRate             float64 `json:"currentHashrate"`
+		AverageHashRate             float64 `json:"averageHashrate"`
+		ValidShares                 float64 `json:"validShares"`
+		InvalidShares               float64 `json:"invalidShares"`
+		StaleShares                 float64 `json:"staleShares"`
+		ActiveWorkers               float64 `json:"activeWorkers"`
+		UnpaidBalanceBaseUnits      float64 `json:"unpaid"`
+		UnconfirmedBalanceBaseUnits float64 `json:"unconfirmed"`
+		CoinsPerMinute              float64 `json:"coinsPerMin"`
+		BTCPerMinute                float64 `json:"btcPerMin"`
+		USDPerMinute                float64 `json:"usdPerMin"`
 	} `json:"data"`
 }
 
@@ -106,6 +129,20 @@ type minerWorkersAPIDataElement struct {
 	InvalidShares     float64 `json:"invalidShares"`
 	StaleShares       float64 `json:"staleShares"`
 }
+
+const namespace = "ethermine"
+
+const poolBasicAPIURLSuffix = "/poolStats"
+const poolNetworkAPIURLSuffix = "/networkStats"
+const poolServerAPIURLSuffix = "/servers/history"
+const minerStatsAPIURLSuffixTemplate = "/miner/<miner>/currentStats"
+const minerWorkersAPIURLSuffixTemplate = "/miner/<miner>/workers"
+
+const defaultDebug = false
+const defaultEndpoint = ":8080"
+
+var enableDebug = false
+var endpoint = defaultEndpoint
 
 func main() {
 	fmt.Printf("%s version %s by %s.\n", appName, appVersion, appAuthor)
@@ -145,7 +182,7 @@ func handleOtherRequest(response http.ResponseWriter, request *http.Request) {
 	if request.URL.Path == "/" {
 		fmt.Fprintf(response, "%s version %s by %s.\n", appName, appVersion, appAuthor)
 		fmt.Fprintf(response, "\nPool IDs:\n")
-		for _, poolID := range util.MapKeys(poolAPIURLs) {
+		for poolID := range Pools {
 			fmt.Fprintf(response, "- %s\n", poolID)
 		}
 		fmt.Fprintf(response, "\nMetrics paths:\n")
@@ -170,24 +207,24 @@ func handlePoolScrapeRequest(response http.ResponseWriter, request *http.Request
 		http.Error(response, "400 - Missing pool.\n", 400)
 		return
 	}
-	poolURL, poolURLOK := poolAPIURLs[poolID]
-	if !poolURLOK {
+	pool, poolOK := Pools[poolID]
+	if !poolOK {
 		http.Error(response, "400 - Invalid pool.\n", 400)
 		return
 	}
 
 	// Scrape target and parse data
 	var basicData poolBasicAPIData
-	if !scrapeParse(&basicData, response, poolURL+poolBasicAPIURLSuffix) {
+	if !scrapeParse(&basicData, response, pool.APIURL+poolBasicAPIURLSuffix) {
 		return
 	}
 	var serverData poolServerAPIData
-	if !scrapeParse(&serverData, response, poolURL+poolServerAPIURLSuffix) {
+	if !scrapeParse(&serverData, response, pool.APIURL+poolServerAPIURLSuffix) {
 		return
 	}
 
 	// Build registry with data
-	registry := buildPoolRegistry(response, poolID, &basicData, &serverData)
+	registry := buildPoolRegistry(response, &pool, &basicData, &serverData)
 	if registry == nil {
 		return
 	}
@@ -210,8 +247,8 @@ func handleMinerScrapeRequest(response http.ResponseWriter, request *http.Reques
 		http.Error(response, "400 - Missing pool.\n", 400)
 		return
 	}
-	poolURL, poolURLOK := poolAPIURLs[poolID]
-	if !poolURLOK {
+	pool, poolOK := Pools[poolID]
+	if !poolOK {
 		http.Error(response, "404 - Pool not found.\n", 404)
 		return
 	}
@@ -226,19 +263,19 @@ func handleMinerScrapeRequest(response http.ResponseWriter, request *http.Reques
 	}
 
 	// Scrape target and parse data
-	apiMinerStatsURL := strings.Replace(poolURL+minerStatsAPIURLSuffixTemplate, "<miner>", minerAddress, 1)
+	apiMinerStatsURL := strings.Replace(pool.APIURL+minerStatsAPIURLSuffixTemplate, "<miner>", minerAddress, 1)
 	var statsData minerStatsAPIData
 	if !scrapeParse(&statsData, response, apiMinerStatsURL) {
 		return
 	}
-	apiMinerWorkersURL := strings.Replace(poolURL+minerWorkersAPIURLSuffixTemplate, "<miner>", minerAddress, 1)
+	apiMinerWorkersURL := strings.Replace(pool.APIURL+minerWorkersAPIURLSuffixTemplate, "<miner>", minerAddress, 1)
 	var workersData minerWorkersAPIData
 	if !scrapeParse(&workersData, response, apiMinerWorkersURL) {
 		return
 	}
 
 	// Build registry with data
-	registry := buildMinerRegistry(response, poolID, minerAddress, &statsData, &workersData)
+	registry := buildMinerRegistry(response, &pool, minerAddress, &statsData, &workersData)
 	if registry == nil {
 		return
 	}
@@ -277,15 +314,21 @@ func scrapeParse(data interface{}, response http.ResponseWriter, targetURL strin
 }
 
 // Builds a new registry for the pool endpoint, adds scraped data to it and returns it if successful or nil if not.
-func buildPoolRegistry(response http.ResponseWriter, poolID string, basicData *poolBasicAPIData, serverData *poolServerAPIData) *prometheus.Registry {
+func buildPoolRegistry(response http.ResponseWriter, pool *Pool, basicData *poolBasicAPIData, serverData *poolServerAPIData) *prometheus.Registry {
 	registry := prometheus.NewRegistry()
 	registry.MustRegister(prometheus.NewGoCollector())
 
 	util.NewExporterMetric(registry, namespace, appVersion)
 
 	constLabels := prometheus.Labels{
-		"pool": poolID,
+		"pool": pool.ID,
 	}
+
+	// Pool info
+	infoLabels := make(prometheus.Labels)
+	infoLabels["name"] = pool.Name
+	infoLabels["currency"] = string(pool.Currency)
+	util.NewGauge(registry, namespace, "pool", "info", "Metadata about the pool.", infoLabels).Set(1)
 
 	// Basic stats
 	util.NewGauge(registry, namespace, "pool", "hashrate_hps", "Current total hash rate of the pool (H/s).", constLabels).Set(basicData.Data.Stats.HashRate)
@@ -317,7 +360,7 @@ func buildPoolRegistry(response http.ResponseWriter, poolID string, basicData *p
 }
 
 // Builds a new registry for the miner endpoint, adds scraped data to it and returns it if successful or nil if not.
-func buildMinerRegistry(response http.ResponseWriter, poolID string, minerAddress string, statsData *minerStatsAPIData, workersData *minerWorkersAPIData) *prometheus.Registry {
+func buildMinerRegistry(response http.ResponseWriter, pool *Pool, minerAddress string, statsData *minerStatsAPIData, workersData *minerWorkersAPIData) *prometheus.Registry {
 	registry := prometheus.NewRegistry()
 	registry.MustRegister(prometheus.NewGoCollector())
 
@@ -325,8 +368,10 @@ func buildMinerRegistry(response http.ResponseWriter, poolID string, minerAddres
 
 	// Note: Miner address isn't needed as it's the instance/target of the scrape.
 	constLabels := prometheus.Labels{
-		"pool": poolID,
+		"pool":  pool.ID,
+		"miner": minerAddress,
 	}
+	baseUnitsPerUnit := Currencies[pool.Currency].BaseUnitsPerUnit
 
 	// Miner stats
 	util.NewGauge(registry, namespace, "miner", "last_seen_seconds", "Delta between time of last statistics entry and when any workers from the miner was last seen (s).", constLabels).Set(statsData.Data.Timestamp - statsData.Data.LastSeenTimestamp)
@@ -337,11 +382,14 @@ func buildMinerRegistry(response http.ResponseWriter, poolID string, minerAddres
 	util.NewGauge(registry, namespace, "miner", "shares_invalid", "Total number of invalid shares for a miner.", constLabels).Set(statsData.Data.InvalidShares)
 	util.NewGauge(registry, namespace, "miner", "shares_stale", "Total number of stale shares for a miner.", constLabels).Set(statsData.Data.StaleShares)
 	util.NewGauge(registry, namespace, "miner", "workers_active", "Number of active workers.", constLabels).Set(statsData.Data.ActiveWorkers)
-	util.NewGauge(registry, namespace, "miner", "balance_unpaid_coins", "Unpaid balance for a miner (in the pool's native base currency).", constLabels).Set(statsData.Data.UnpaidBalance)
-	util.NewGauge(registry, namespace, "miner", "balance_unconfirmed_coins", "Unconfirmed balance for a miner (in the pool's native base currency).", constLabels).Set(statsData.Data.UnconfirmedBalance)
-	util.NewGauge(registry, namespace, "miner", "income_minute_coins", "Mined coins per minute (in the pool's native currency).", constLabels).Set(statsData.Data.CoinsPerMinute)
+	util.NewGauge(registry, namespace, "miner", "balance_unpaid_coins", "Unpaid balance for a miner.", constLabels).Set(statsData.Data.UnpaidBalanceBaseUnits / baseUnitsPerUnit)
+	util.NewGauge(registry, namespace, "miner", "balance_unconfirmed_coins", "Unconfirmed balance for a miner.", constLabels).Set(statsData.Data.UnconfirmedBalanceBaseUnits / baseUnitsPerUnit)
+	util.NewGauge(registry, namespace, "miner", "income_minute_coins", "Mined coins per minute.", constLabels).Set(statsData.Data.CoinsPerMinute)
 	util.NewGauge(registry, namespace, "miner", "income_minute_usd", "Mined coins per minute (converted to USD).", constLabels).Set(statsData.Data.USDPerMinute)
 	util.NewGauge(registry, namespace, "miner", "income_minute_btc", "Mined coins per minute (converted to BTC).", constLabels).Set(statsData.Data.BTCPerMinute)
+	util.NewGauge(registry, namespace, "miner", "income_coins", "Mined coins per second.", constLabels).Set(statsData.Data.CoinsPerMinute / 60)
+	util.NewGauge(registry, namespace, "miner", "income_usd", "Mined coins per second (converted to USD).", constLabels).Set(statsData.Data.USDPerMinute / 60)
+	util.NewGauge(registry, namespace, "miner", "income_btc", "Mined coins per second (converted to BTC).", constLabels).Set(statsData.Data.BTCPerMinute / 60)
 
 	// Worker stats
 	workerLabels := make(prometheus.Labels)

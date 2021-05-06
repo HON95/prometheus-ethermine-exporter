@@ -86,7 +86,7 @@ scrape_configs:
         replacement: ethermine-exporter:8080
 ```
 
-Note: Only one pool per job is supported, so if you want to scrape multiple pools, you need to create multiple jobs for each pool.
+Note: Only one pool per job is supported, so if you want to scrape multiple pools, you need to create jobs for each pool.
 
 ## Configuration
 

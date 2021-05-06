@@ -88,6 +88,13 @@ scrape_configs:
 
 Note: Only one pool per job is supported, so if you want to scrape multiple pools, you need to create jobs for each pool.
 
+### Grafana
+
+Example dashboards:
+
+- [Pool dashboard](https://grafana.com/grafana/dashboards/14346)
+- [Miner dashboard](https://grafana.com/grafana/dashboards/14347)
+
 ## Configuration
 
 ### Docker Image Versions

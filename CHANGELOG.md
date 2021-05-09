@@ -18,6 +18,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [1.2.1] - 2021-05-09
+
+### Changed
+
+- Included label `pool_name` for all pool metrics for better usability.
+
 ## [1.2.0] - 2021-05-09
 
 ### Added

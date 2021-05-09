@@ -3,25 +3,25 @@
 ethermine_exporter_info{version="0.0.0-SNAPSHOT"} 1
 # HELP ethermine_pool_hashrate_hps Current total hash rate of the pool (H/s).
 # TYPE ethermine_pool_hashrate_hps gauge
-ethermine_pool_hashrate_hps{pool="ethermine"} 1.1636533160266422e+14
+ethermine_pool_hashrate_hps{pool="ethermine",pool_name="Ethermine"} 1.1627791764115673e+14
 # HELP ethermine_pool_info Metadata about the pool.
 # TYPE ethermine_pool_info gauge
-ethermine_pool_info{currency="ETH",name="Ethermine",pool="ethermine"} 1
+ethermine_pool_info{currency="ETH",pool="ethermine",pool_name="Ethermine"} 1
 # HELP ethermine_pool_miner_count Current total number of miners in the pool.
 # TYPE ethermine_pool_miner_count gauge
-ethermine_pool_miner_count{pool="ethermine"} 276367
+ethermine_pool_miner_count{pool="ethermine",pool_name="Ethermine"} 276036
 # HELP ethermine_pool_price_btc Current price (BTC).
 # TYPE ethermine_pool_price_btc gauge
-ethermine_pool_price_btc{pool="ethermine"} 0.06812
+ethermine_pool_price_btc{pool="ethermine",pool_name="Ethermine"} 0.0678
 # HELP ethermine_pool_price_usd Current price (USD).
 # TYPE ethermine_pool_price_usd gauge
-ethermine_pool_price_usd{pool="ethermine"} 3911.89
+ethermine_pool_price_usd{pool="ethermine",pool_name="Ethermine"} 3894.06
 # HELP ethermine_pool_server_hashrate_hps Current hash rate per server (H/s).
 # TYPE ethermine_pool_server_hashrate_hps gauge
-ethermine_pool_server_hashrate_hps{pool="ethermine",server="asia1"} 2.2382611483885996e+13
-ethermine_pool_server_hashrate_hps{pool="ethermine",server="eu1"} 6.828889379622365e+13
-ethermine_pool_server_hashrate_hps{pool="ethermine",server="us1"} 1.7042861147355621e+13
-ethermine_pool_server_hashrate_hps{pool="ethermine",server="us2"} 8.6509651751318125e+12
+ethermine_pool_server_hashrate_hps{pool="ethermine",pool_name="Ethermine",server="asia1"} 2.2389020508017664e+13
+ethermine_pool_server_hashrate_hps{pool="ethermine",pool_name="Ethermine",server="eu1"} 6.827537971402743e+13
+ethermine_pool_server_hashrate_hps{pool="ethermine",pool_name="Ethermine",server="us1"} 1.6980130321965209e+13
+ethermine_pool_server_hashrate_hps{pool="ethermine",pool_name="Ethermine",server="us2"} 8.633387097077387e+12
 # HELP ethermine_pool_worker_count Current total number of workers in the pool.
 # TYPE ethermine_pool_worker_count gauge
-ethermine_pool_worker_count{pool="ethermine"} 732030
+ethermine_pool_worker_count{pool="ethermine",pool_name="Ethermine"} 730405

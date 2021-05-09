@@ -24,6 +24,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Included label `pool_name` for all pool metrics for better usability.
 
+## [1.2.2] - 2021-05-09
+
+### Fixed
+
+- Fixed pool name for Ravencoin Flypool (from "Tavencoin Flypool").
+
 ## [1.2.0] - 2021-05-09
 
 ### Added

@@ -18,6 +18,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [1.2.0] - 2021-05-09
+
+### Added
+
+- Added metric `ethermine_miner_info` containing the pool name and pool currency in addition to the usual miner labels.
+
+### Changed
+
+- Included label `pool` for metric `ethermine_pool_info` for better cohesion.
+- Included label `currency` for metrics `ethermin_miner_{balance_unpaid_coins|balance_unconfirmed_coins|income_coins}`.
+
 ## [1.1.0] - 2021-05-07
 
 ### Added

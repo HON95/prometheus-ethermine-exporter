@@ -55,7 +55,7 @@ var Pools = map[string]Pool{
 	"ethermine-etc":     {"ethermine-etc", "ETC Ethermine", CurrencySymbolEthereumClassic, "https://api-etc.ethermine.org"},
 	"ethpool":           {"ethpool", "Ethpool", CurrencySymbolEthereum, "https://api.ethpool.org"},
 	"flypool-zcash":     {"flypool-zcash", "Zcash Flypool", CurrencySymbolZcash, "https://api-zcash.flypool.org"},
-	"flypool-ravencoin": {"flypool-ravencoin", "Tavencoin Flypool", CurrencySymbolRavencoin, "https://api-ravencoin.flypool.org"},
+	"flypool-ravencoin": {"flypool-ravencoin", "Ravencoin Flypool", CurrencySymbolRavencoin, "https://api-ravencoin.flypool.org"},
 	"flypool-beam":      {"flypool-beam", "Flypool BEAM", CurrencySymbolBEAM, "https://api-beam.flypool.org"},
 }
 

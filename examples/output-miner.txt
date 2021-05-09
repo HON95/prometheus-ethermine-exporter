@@ -1,153 +1,72 @@
 # HELP ethermine_exporter_info Metadata about the exporter.
 # TYPE ethermine_exporter_info gauge
 ethermine_exporter_info{version="0.0.0-SNAPSHOT"} 1
-# HELP ethermine_miner_balance_unconfirmed_coins Unconfirmed balance for a miner (in the pool's native currency).
+# HELP ethermine_miner_balance_unconfirmed_coins Unconfirmed balance for a miner.
 # TYPE ethermine_miner_balance_unconfirmed_coins gauge
-ethermine_miner_balance_unconfirmed_coins 0
-# HELP ethermine_miner_balance_unpaid_coins Unpaid balance for a miner (in the pool's native currency).
+ethermine_miner_balance_unconfirmed_coins{currency="ETH",miner="F6403152cAd46F2224046C9B9F523d690E41Bffd",pool="ethermine"} 0
+# HELP ethermine_miner_balance_unpaid_coins Unpaid balance for a miner.
 # TYPE ethermine_miner_balance_unpaid_coins gauge
-ethermine_miner_balance_unpaid_coins 1.0637645377649976e+16
+ethermine_miner_balance_unpaid_coins{currency="ETH",miner="F6403152cAd46F2224046C9B9F523d690E41Bffd",pool="ethermine"} 0.001753035557510643
 # HELP ethermine_miner_hashrate_average_hps Total average hash rate for a miner (H/s).
 # TYPE ethermine_miner_hashrate_average_hps gauge
-ethermine_miner_hashrate_average_hps 8.710493827160494e+07
+ethermine_miner_hashrate_average_hps{miner="F6403152cAd46F2224046C9B9F523d690E41Bffd",pool="ethermine"} 8.775322097597802e+07
 # HELP ethermine_miner_hashrate_current_hps Total current hash rate for a miner (H/s).
 # TYPE ethermine_miner_hashrate_current_hps gauge
-ethermine_miner_hashrate_current_hps 7.777777777777778e+07
+ethermine_miner_hashrate_current_hps{miner="F6403152cAd46F2224046C9B9F523d690E41Bffd",pool="ethermine"} 9.3059044715e+07
 # HELP ethermine_miner_hashrate_reported_hps Total hash rate for a miner as reported by the miner (H/s).
 # TYPE ethermine_miner_hashrate_reported_hps gauge
-ethermine_miner_hashrate_reported_hps 9.1527085e+07
-# HELP ethermine_miner_income_minute_btc Mined coins per minute (converted to BTC).
+ethermine_miner_hashrate_reported_hps{miner="F6403152cAd46F2224046C9B9F523d690E41Bffd",pool="ethermine"} 9.1518729e+07
+# HELP ethermine_miner_income_btc Mined coins per second (converted to BTC).
+# TYPE ethermine_miner_income_btc gauge
+ethermine_miner_income_btc{miner="F6403152cAd46F2224046C9B9F523d690E41Bffd",pool="ethermine"} 2.9699221872044414e-09
+# HELP ethermine_miner_income_coins Mined coins per second.
+# TYPE ethermine_miner_income_coins gauge
+ethermine_miner_income_coins{currency="ETH",miner="F6403152cAd46F2224046C9B9F523d690E41Bffd",pool="ethermine"} 4.359838795074048e-08
+# HELP ethermine_miner_income_minute_btc (Deprecated) Mined coins per minute (converted to BTC).
 # TYPE ethermine_miner_income_minute_btc gauge
-ethermine_miner_income_minute_btc 1.0022445826287386e-07
-# HELP ethermine_miner_income_minute_coins Mined coins per minute (in the pool's native currency).
+ethermine_miner_income_minute_btc{miner="F6403152cAd46F2224046C9B9F523d690E41Bffd",pool="ethermine"} 1.781953312322665e-07
+# HELP ethermine_miner_income_minute_coins (Deprecated) Mined coins per minute.
 # TYPE ethermine_miner_income_minute_coins gauge
-ethermine_miner_income_minute_coins 2.014561975133143e-06
-# HELP ethermine_miner_income_minute_usd Mined coins per minute (converted to USD).
+ethermine_miner_income_minute_coins{currency="ETH",miner="F6403152cAd46F2224046C9B9F523d690E41Bffd",pool="ethermine"} 2.6159032770444287e-06
+# HELP ethermine_miner_income_minute_usd (Deprecated) Mined coins per minute (converted to USD).
 # TYPE ethermine_miner_income_minute_usd gauge
-ethermine_miner_income_minute_usd 0.005748210120506651
-# HELP ethermine_miner_last_seen_seconds Delta between time of last statistics entry and when the miner was last seen (s).
+ethermine_miner_income_minute_usd{miner="F6403152cAd46F2224046C9B9F523d690E41Bffd",pool="ethermine"} 0.01023312587043733
+# HELP ethermine_miner_income_usd Mined coins per second (converted to USD).
+# TYPE ethermine_miner_income_usd gauge
+ethermine_miner_income_usd{miner="F6403152cAd46F2224046C9B9F523d690E41Bffd",pool="ethermine"} 0.0001705520978406222
+# HELP ethermine_miner_info Metadata about the miner.
+# TYPE ethermine_miner_info gauge
+ethermine_miner_info{miner="F6403152cAd46F2224046C9B9F523d690E41Bffd",pool="ethermine",pool_currency="ETH",pool_name="Ethermine"} 1
+# HELP ethermine_miner_last_seen_seconds Delta between time of last statistics entry and when any workers from the miner was last seen (s).
 # TYPE ethermine_miner_last_seen_seconds gauge
-ethermine_miner_last_seen_seconds 33
+ethermine_miner_last_seen_seconds{miner="F6403152cAd46F2224046C9B9F523d690E41Bffd",pool="ethermine"} 67
 # HELP ethermine_miner_shares_invalid Total number of invalid shares for a miner.
 # TYPE ethermine_miner_shares_invalid gauge
-ethermine_miner_shares_invalid 0
+ethermine_miner_shares_invalid{miner="F6403152cAd46F2224046C9B9F523d690E41Bffd",pool="ethermine"} 0
 # HELP ethermine_miner_shares_stale Total number of stale shares for a miner.
 # TYPE ethermine_miner_shares_stale gauge
-ethermine_miner_shares_stale 0
+ethermine_miner_shares_stale{miner="F6403152cAd46F2224046C9B9F523d690E41Bffd",pool="ethermine"} 0
 # HELP ethermine_miner_shares_valid Total number of valid shares for a miner.
 # TYPE ethermine_miner_shares_valid gauge
-ethermine_miner_shares_valid 70
+ethermine_miner_shares_valid{miner="F6403152cAd46F2224046C9B9F523d690E41Bffd",pool="ethermine"} 78
+# HELP ethermine_miner_workers_active Number of active workers.
+# TYPE ethermine_miner_workers_active gauge
+ethermine_miner_workers_active{miner="F6403152cAd46F2224046C9B9F523d690E41Bffd",pool="ethermine"} 1
 # HELP ethermine_worker_hashrate_current_hps Current hash rate for a worker (H/s).
 # TYPE ethermine_worker_hashrate_current_hps gauge
-ethermine_worker_hashrate_current_hps{worker="artorias"} 1.111111111111111e+06
-ethermine_worker_hashrate_current_hps{worker="navlaan"} 7.666666666666667e+07
+ethermine_worker_hashrate_current_hps{miner="F6403152cAd46F2224046C9B9F523d690E41Bffd",pool="ethermine",worker="navlaan"} 9.3059044715e+07
 # HELP ethermine_worker_hashrate_reported_hps Current hash rate for a worker as reported from the worker (H/s).
 # TYPE ethermine_worker_hashrate_reported_hps gauge
-ethermine_worker_hashrate_reported_hps{worker="artorias"} 0
-ethermine_worker_hashrate_reported_hps{worker="navlaan"} 9.1527085e+07
+ethermine_worker_hashrate_reported_hps{miner="F6403152cAd46F2224046C9B9F523d690E41Bffd",pool="ethermine",worker="navlaan"} 9.1518729e+07
 # HELP ethermine_worker_last_seen_seconds Delta between time of last statistics entry and when the miner was last seen (s).
 # TYPE ethermine_worker_last_seen_seconds gauge
-ethermine_worker_last_seen_seconds{worker="artorias"} 33
-ethermine_worker_last_seen_seconds{worker="navlaan"} 64
+ethermine_worker_last_seen_seconds{miner="F6403152cAd46F2224046C9B9F523d690E41Bffd",pool="ethermine",worker="navlaan"} 67
 # HELP ethermine_worker_shares_invalid Number of invalid shared for a worker.
 # TYPE ethermine_worker_shares_invalid gauge
-ethermine_worker_shares_invalid{worker="artorias"} 0
-ethermine_worker_shares_invalid{worker="navlaan"} 0
+ethermine_worker_shares_invalid{miner="F6403152cAd46F2224046C9B9F523d690E41Bffd",pool="ethermine",worker="navlaan"} 0
 # HELP ethermine_worker_shares_stale Number of stale shared for a worker.
 # TYPE ethermine_worker_shares_stale gauge
-ethermine_worker_shares_stale{worker="artorias"} 0
-ethermine_worker_shares_stale{worker="navlaan"} 0
+ethermine_worker_shares_stale{miner="F6403152cAd46F2224046C9B9F523d690E41Bffd",pool="ethermine",worker="navlaan"} 0
 # HELP ethermine_worker_shares_valid Number of valid shared for a worker.
 # TYPE ethermine_worker_shares_valid gauge
-ethermine_worker_shares_valid{worker="artorias"} 1
-ethermine_worker_shares_valid{worker="navlaan"} 69
-# HELP go_gc_duration_seconds A summary of the pause duration of garbage collection cycles.
-# TYPE go_gc_duration_seconds summary
-go_gc_duration_seconds{quantile="0"} 4.8712e-05
-go_gc_duration_seconds{quantile="0.25"} 4.8712e-05
-go_gc_duration_seconds{quantile="0.5"} 4.8712e-05
-go_gc_duration_seconds{quantile="0.75"} 4.8712e-05
-go_gc_duration_seconds{quantile="1"} 4.8712e-05
-go_gc_duration_seconds_sum 4.8712e-05
-go_gc_duration_seconds_count 1
-# HELP go_goroutines Number of goroutines that currently exist.
-# TYPE go_goroutines gauge
-go_goroutines 8
-# HELP go_info Information about the Go environment.
-# TYPE go_info gauge
-go_info{version="go1.16"} 1
-# HELP go_memstats_alloc_bytes Number of bytes allocated and still in use.
-# TYPE go_memstats_alloc_bytes gauge
-go_memstats_alloc_bytes 3.405128e+06
-# HELP go_memstats_alloc_bytes_total Total number of bytes allocated, even if freed.
-# TYPE go_memstats_alloc_bytes_total counter
-go_memstats_alloc_bytes_total 5.905e+06
-# HELP go_memstats_buck_hash_sys_bytes Number of bytes used by the profiling bucket hash table.
-# TYPE go_memstats_buck_hash_sys_bytes gauge
-go_memstats_buck_hash_sys_bytes 1.444417e+06
-# HELP go_memstats_frees_total Total number of frees.
-# TYPE go_memstats_frees_total counter
-go_memstats_frees_total 67996
-# HELP go_memstats_gc_cpu_fraction The fraction of this program's available CPU time used by the GC since the program started.
-# TYPE go_memstats_gc_cpu_fraction gauge
-go_memstats_gc_cpu_fraction 8.15797246000612e-05
-# HELP go_memstats_gc_sys_bytes Number of bytes used for garbage collection system metadata.
-# TYPE go_memstats_gc_sys_bytes gauge
-go_memstats_gc_sys_bytes 4.632144e+06
-# HELP go_memstats_heap_alloc_bytes Number of heap bytes allocated and still in use.
-# TYPE go_memstats_heap_alloc_bytes gauge
-go_memstats_heap_alloc_bytes 3.405128e+06
-# HELP go_memstats_heap_idle_bytes Number of heap bytes waiting to be used.
-# TYPE go_memstats_heap_idle_bytes gauge
-go_memstats_heap_idle_bytes 6.2087168e+07
-# HELP go_memstats_heap_inuse_bytes Number of heap bytes that are in use.
-# TYPE go_memstats_heap_inuse_bytes gauge
-go_memstats_heap_inuse_bytes 4.46464e+06
-# HELP go_memstats_heap_objects Number of allocated objects.
-# TYPE go_memstats_heap_objects gauge
-go_memstats_heap_objects 46572
-# HELP go_memstats_heap_released_bytes Number of heap bytes released to OS.
-# TYPE go_memstats_heap_released_bytes gauge
-go_memstats_heap_released_bytes 6.189056e+07
-# HELP go_memstats_heap_sys_bytes Number of heap bytes obtained from system.
-# TYPE go_memstats_heap_sys_bytes gauge
-go_memstats_heap_sys_bytes 6.6551808e+07
-# HELP go_memstats_last_gc_time_seconds Number of seconds since 1970 of last garbage collection.
-# TYPE go_memstats_last_gc_time_seconds gauge
-go_memstats_last_gc_time_seconds 1.6198878039411926e+09
-# HELP go_memstats_lookups_total Total number of pointer lookups.
-# TYPE go_memstats_lookups_total counter
-go_memstats_lookups_total 0
-# HELP go_memstats_mallocs_total Total number of mallocs.
-# TYPE go_memstats_mallocs_total counter
-go_memstats_mallocs_total 114568
-# HELP go_memstats_mcache_inuse_bytes Number of bytes in use by mcache structures.
-# TYPE go_memstats_mcache_inuse_bytes gauge
-go_memstats_mcache_inuse_bytes 9600
-# HELP go_memstats_mcache_sys_bytes Number of bytes used for mcache structures obtained from system.
-# TYPE go_memstats_mcache_sys_bytes gauge
-go_memstats_mcache_sys_bytes 16384
-# HELP go_memstats_mspan_inuse_bytes Number of bytes in use by mspan structures.
-# TYPE go_memstats_mspan_inuse_bytes gauge
-go_memstats_mspan_inuse_bytes 114512
-# HELP go_memstats_mspan_sys_bytes Number of bytes used for mspan structures obtained from system.
-# TYPE go_memstats_mspan_sys_bytes gauge
-go_memstats_mspan_sys_bytes 131072
-# HELP go_memstats_next_gc_bytes Number of heap bytes when next garbage collection will take place.
-# TYPE go_memstats_next_gc_bytes gauge
-go_memstats_next_gc_bytes 4.194304e+06
-# HELP go_memstats_other_sys_bytes Number of bytes used for other system allocations.
-# TYPE go_memstats_other_sys_bytes gauge
-go_memstats_other_sys_bytes 1.133431e+06
-# HELP go_memstats_stack_inuse_bytes Number of bytes in use by the stack allocator.
-# TYPE go_memstats_stack_inuse_bytes gauge
-go_memstats_stack_inuse_bytes 557056
-# HELP go_memstats_stack_sys_bytes Number of bytes obtained from system for stack allocator.
-# TYPE go_memstats_stack_sys_bytes gauge
-go_memstats_stack_sys_bytes 557056
-# HELP go_memstats_sys_bytes Number of bytes obtained from system.
-# TYPE go_memstats_sys_bytes gauge
-go_memstats_sys_bytes 7.4466312e+07
-# HELP go_threads Number of OS threads created.
-# TYPE go_threads gauge
-go_threads 11
+ethermine_worker_shares_valid{miner="F6403152cAd46F2224046C9B9F523d690E41Bffd",pool="ethermine",worker="navlaan"} 78

@@ -100,3 +100,14 @@ func NewGaugeVec(registry *prometheus.Registry, namespace string, subsystem stri
 	registry.MustRegister(metric)
 	return metric
 }
+
+// MergeLabels - Merge multiple label maps into one. If they have overlapping keys, the value from the most right map will be used.
+func MergeLabels(maps ...prometheus.Labels) prometheus.Labels {
+	result := make(prometheus.Labels)
+	for _, m := range maps {
+		for k, v := range m {
+			result[k] = v
+		}
+	}
+	return result
+}

@@ -325,10 +325,11 @@ func buildPoolRegistry(response http.ResponseWriter, pool *Pool, basicData *pool
 	}
 
 	// Pool info
-	infoLabels := make(prometheus.Labels)
-	infoLabels["name"] = pool.Name
-	infoLabels["currency"] = string(pool.Currency)
-	util.NewGauge(registry, namespace, "pool", "info", "Metadata about the pool.", infoLabels).Set(1)
+	util.NewGauge(registry, namespace, "pool", "info", "Metadata about the pool.", prometheus.Labels{
+		"pool":     pool.ID,
+		"name":     pool.Name,
+		"currency": string(pool.Currency),
+	}).Set(1)
 
 	// Basic stats
 	util.NewGauge(registry, namespace, "pool", "hashrate_hps", "Current total hash rate of the pool (H/s).", constLabels).Set(basicData.Data.Stats.HashRate)
@@ -371,7 +372,18 @@ func buildMinerRegistry(response http.ResponseWriter, pool *Pool, minerAddress s
 		"pool":  pool.ID,
 		"miner": minerAddress,
 	}
+	constLabelsWithCurrency := util.MergeLabels(constLabels, prometheus.Labels{
+		"currency": string(pool.Currency),
+	})
 	baseUnitsPerUnit := Currencies[pool.Currency].BaseUnitsPerUnit
+
+	// Miner info
+	util.NewGauge(registry, namespace, "miner", "info", "Metadata about the miner.", prometheus.Labels{
+		"pool":          pool.ID,
+		"miner":         minerAddress,
+		"pool_name":     pool.Name,
+		"pool_currency": string(pool.Currency),
+	}).Set(1)
 
 	// Miner stats
 	util.NewGauge(registry, namespace, "miner", "last_seen_seconds", "Delta between time of last statistics entry and when any workers from the miner was last seen (s).", constLabels).Set(statsData.Data.Timestamp - statsData.Data.LastSeenTimestamp)
@@ -382,14 +394,15 @@ func buildMinerRegistry(response http.ResponseWriter, pool *Pool, minerAddress s
 	util.NewGauge(registry, namespace, "miner", "shares_invalid", "Total number of invalid shares for a miner.", constLabels).Set(statsData.Data.InvalidShares)
 	util.NewGauge(registry, namespace, "miner", "shares_stale", "Total number of stale shares for a miner.", constLabels).Set(statsData.Data.StaleShares)
 	util.NewGauge(registry, namespace, "miner", "workers_active", "Number of active workers.", constLabels).Set(statsData.Data.ActiveWorkers)
-	util.NewGauge(registry, namespace, "miner", "balance_unpaid_coins", "Unpaid balance for a miner.", constLabels).Set(statsData.Data.UnpaidBalanceBaseUnits / baseUnitsPerUnit)
-	util.NewGauge(registry, namespace, "miner", "balance_unconfirmed_coins", "Unconfirmed balance for a miner.", constLabels).Set(statsData.Data.UnconfirmedBalanceBaseUnits / baseUnitsPerUnit)
-	util.NewGauge(registry, namespace, "miner", "income_minute_coins", "Mined coins per minute.", constLabels).Set(statsData.Data.CoinsPerMinute)
-	util.NewGauge(registry, namespace, "miner", "income_minute_usd", "Mined coins per minute (converted to USD).", constLabels).Set(statsData.Data.USDPerMinute)
-	util.NewGauge(registry, namespace, "miner", "income_minute_btc", "Mined coins per minute (converted to BTC).", constLabels).Set(statsData.Data.BTCPerMinute)
-	util.NewGauge(registry, namespace, "miner", "income_coins", "Mined coins per second.", constLabels).Set(statsData.Data.CoinsPerMinute / 60)
+	util.NewGauge(registry, namespace, "miner", "balance_unpaid_coins", "Unpaid balance for a miner.", constLabelsWithCurrency).Set(statsData.Data.UnpaidBalanceBaseUnits / baseUnitsPerUnit)
+	util.NewGauge(registry, namespace, "miner", "balance_unconfirmed_coins", "Unconfirmed balance for a miner.", constLabelsWithCurrency).Set(statsData.Data.UnconfirmedBalanceBaseUnits / baseUnitsPerUnit)
+	util.NewGauge(registry, namespace, "miner", "income_coins", "Mined coins per second.", constLabelsWithCurrency).Set(statsData.Data.CoinsPerMinute / 60)
 	util.NewGauge(registry, namespace, "miner", "income_usd", "Mined coins per second (converted to USD).", constLabels).Set(statsData.Data.USDPerMinute / 60)
 	util.NewGauge(registry, namespace, "miner", "income_btc", "Mined coins per second (converted to BTC).", constLabels).Set(statsData.Data.BTCPerMinute / 60)
+	// Deprecated
+	util.NewGauge(registry, namespace, "miner", "income_minute_coins", "(Deprecated) Mined coins per minute.", constLabelsWithCurrency).Set(statsData.Data.CoinsPerMinute)
+	util.NewGauge(registry, namespace, "miner", "income_minute_usd", "(Deprecated) Mined coins per minute (converted to USD).", constLabels).Set(statsData.Data.USDPerMinute)
+	util.NewGauge(registry, namespace, "miner", "income_minute_btc", "(Deprecated) Mined coins per minute (converted to BTC).", constLabels).Set(statsData.Data.BTCPerMinute)
 
 	// Worker stats
 	workerLabels := make(prometheus.Labels)

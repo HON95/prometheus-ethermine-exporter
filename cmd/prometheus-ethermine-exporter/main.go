@@ -321,15 +321,14 @@ func buildPoolRegistry(response http.ResponseWriter, pool *Pool, basicData *pool
 	util.NewExporterMetric(registry, namespace, appVersion)
 
 	constLabels := prometheus.Labels{
-		"pool": pool.ID,
+		"pool":      pool.ID,
+		"pool_name": pool.Name,
 	}
 
 	// Pool info
-	util.NewGauge(registry, namespace, "pool", "info", "Metadata about the pool.", prometheus.Labels{
-		"pool":     pool.ID,
-		"name":     pool.Name,
+	util.NewGauge(registry, namespace, "pool", "info", "Metadata about the pool.", util.MergeLabels(constLabels, prometheus.Labels{
 		"currency": string(pool.Currency),
-	}).Set(1)
+	})).Set(1)
 
 	// Basic stats
 	util.NewGauge(registry, namespace, "pool", "hashrate_hps", "Current total hash rate of the pool (H/s).", constLabels).Set(basicData.Data.Stats.HashRate)
@@ -378,12 +377,10 @@ func buildMinerRegistry(response http.ResponseWriter, pool *Pool, minerAddress s
 	baseUnitsPerUnit := Currencies[pool.Currency].BaseUnitsPerUnit
 
 	// Miner info
-	util.NewGauge(registry, namespace, "miner", "info", "Metadata about the miner.", prometheus.Labels{
-		"pool":          pool.ID,
-		"miner":         minerAddress,
+	util.NewGauge(registry, namespace, "miner", "info", "Metadata about the miner.", util.MergeLabels(constLabels, prometheus.Labels{
 		"pool_name":     pool.Name,
 		"pool_currency": string(pool.Currency),
-	}).Set(1)
+	})).Set(1)
 
 	// Miner stats
 	util.NewGauge(registry, namespace, "miner", "last_seen_seconds", "Delta between time of last statistics entry and when any workers from the miner was last seen (s).", constLabels).Set(statsData.Data.Timestamp - statsData.Data.LastSeenTimestamp)

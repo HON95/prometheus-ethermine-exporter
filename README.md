@@ -109,7 +109,7 @@ Note: All metrics start with `ethermine` (due to the name of this exporter), reg
 
 ## Development
 
-- Build: `go build -o prometheus-ethermine-exporter cmd/prometheus-ethermine-exporter/main.go`
+- Build: `go build -o prometheus-ethermine-exporter cmd/prometheus-ethermine-exporter/*.go`
 - Lint: `golint ./...`
 
 ## License

@@ -25,11 +25,9 @@ The exporter uses the unified API structure for all the listed pools, so support
 Example `docker-compose.yml`:
 
 ```yaml
-version: "3.7"
-
 services:
   ethermine-exporter:
-    image: hon95/hon95/prometheus-ethermine-exporter:1
+    image: hon95/prometheus-ethermine-exporter:1
     #command:
     #  - '--endpoint=:8080'
     #  - '--debug'
@@ -111,7 +109,7 @@ Note: All metrics start with `ethermine` (due to the name of this exporter), reg
 
 ## Development
 
-- Build: `go build -o prometheus-ethermine-exporter`
+- Build: `go build -o prometheus-ethermine-exporter cmd/prometheus-ethermine-exporter/main.go`
 - Lint: `golint ./...`
 
 ## License

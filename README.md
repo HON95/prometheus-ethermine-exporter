@@ -56,6 +56,7 @@ scrape_configs:
       pool: [ethermine]
     static_configs:
       - targets:
+          # TODO Point this to your exporter
           - ethermine-exporter:8080
 
   - job_name: ethermine-ethpool-pool
@@ -66,6 +67,7 @@ scrape_configs:
       pool: [ethpool]
     static_configs:
       - targets:
+          # TODO Point this to your exporter
           - ethermine-exporter:8080
 
   - job_name: ethermine-ethermine-miner
@@ -76,6 +78,7 @@ scrape_configs:
       pool: [ethermine]
     static_configs:
       - targets:
+          # TODO List your ETH addresses here
           - F6403152cAd46F2224046C9B9F523d690E41Bffd
     relabel_configs:
       - source_labels: [__address__]
@@ -83,8 +86,11 @@ scrape_configs:
       - source_labels: [__param_target]
         target_label: instance
       - target_label: __address__
+        # TODO Point this to your exporter
         replacement: ethermine-exporter:8080
 ```
+
+Replace `ethermine-exporter` with the IP address or hostname of the exporter (or the machine it's running on if publishing the port as in the example above). Set `targets` to the address(es) to monitor.
 
 Note: Only one pool per job is supported, so if you want to scrape multiple pools, you need to create jobs for each pool.
 
